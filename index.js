@@ -22,6 +22,7 @@ app.post("/api/shorturl", bp.urlencoded({extended: false}), (req, res)=>{
     // validate url
     // make sure the data exists
     if(req.body != null && req.body.url_d != null){
+        var og_url = req.body.url_d.toString();
         var url_d = req.body.url_d.toString();
 
         // console.log(url_d);
@@ -66,17 +67,17 @@ app.post("/api/shorturl", bp.urlencoded({extended: false}), (req, res)=>{
                 // if a valid url is recieved
 
                 // check if the url is in the map
-                if(!urls.has(url_d)){
+                if(!urls.has(og_url)){
                     // add url if it is not on the map
-                    urls.set(url_d, current_num);
+                    urls.set(og_url, current_num);
                     current_num++;
                 }
 
                 // return the details of the url
                 res.json({
-                    original_url: url_d,
-                    short_url: urls.get(url_d),
-                });;
+                    original_url: og_url,
+                    short_url: urls.get(og_url),
+                });
             }
 
         });
@@ -87,10 +88,20 @@ app.post("/api/shorturl", bp.urlencoded({extended: false}), (req, res)=>{
     }
 });
 
-app.get("/api/shorturl/*", (req, res)=>{
-    var url_content = req.url.toString().split("/");
-    
-    res.send(url_content[url_content.length - 1]);
+app.get("/api/shorturl/:urlid", (req, res)=>{
+    var urlid = req.params.urlid;
+    var found = false;
+    urls.forEach((val, key)=>{
+
+        if(val == urlid){
+            res.redirect(key);
+            found = true;
+            return;
+        }
+
+    });
+
+    if(!found) res.json({error: "invalid url"});
 });
 
 app.get("/", (req, res)=>{
